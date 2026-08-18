@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Splatoon 3 壞魷遊戲</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#111118;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","Noto Sans SC","Microsoft JhengHei","Microsoft YaHei",sans-serif}
+.app{max-width:760px;margin:auto;padding:14px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.logo{font-size:18px;font-weight:900}
+.logo b{color:#29e4da}
+.lang{width:auto;padding:7px 10px!important;font-size:12px!important}
+.phase{font-size:12px;color:#bbb;background:#27262f;padding:7px 10px;border-radius:99px}
+.page{display:none}.page.on{display:block}
+.card{background:#201f28;border:1px solid #ffffff18;border-radius:22px;padding:20px;box-shadow:0 14px 40px #0007}
+.hero{padding:36px 20px;text-align:center}.squid{font-size:68px}
+.tag{color:#29e4da;font-weight:900;letter-spacing:2px;font-size:11px}
+h1{font-size:38px;margin:8px 0}h2{margin:5px 0 14px}h3{margin:5px 0}
+p{color:#c4c2cc;line-height:1.65}
+button,select{font:inherit}
+button{width:100%;border:0;border-radius:14px;padding:13px 12px;background:#29e4da;color:#101016;font-weight:900;cursor:pointer}
+button:active{transform:translateY(1px)}
+button.alt{background:#494852;color:#fff}
+button.pink{background:#ff4fa3}
+button.yellow{background:#ffe04b}
+button.red{background:#ff626d}
+button:disabled{opacity:.45;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.grid.two{grid-template-columns:1fr 1fr}
+.choice{background:#2b2a33;color:#fff;border:2px solid #ffffff12}.choice.sel{border-color:#29e4da;background:#223b3a}
+label{display:block;font-size:14px;font-weight:900;margin:16px 0 7px}
+select{width:100%;padding:12px;border-radius:12px;border:1px solid #ffffff20;background:#111118;color:#fff}
+.notice{background:#2a2932;border-radius:13px;padding:13px;margin:12px 0;line-height:1.65;color:#ddd}
+.notice strong{color:#fff}
+.small{font-size:12px;color:#aaa}
+.actions{display:flex;gap:9px;margin-top:15px}.actions button{flex:1}
+.mode-note{margin-top:9px}
+.rolegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rolecard{padding:16px;border-radius:17px;background:#292832;border:1px solid #ffffff14}
+.rolecard.bad{border-color:#ff4fa3}.rolecard.dull{border-color:#a86bff}.rolecard.good{border-color:#29e4da}
+.roleicon{font-size:38px}.rolecard p{margin:5px 0;font-size:13px}
+.taskbox{background:#292832;border-left:5px solid #ffe04b;padding:15px;border-radius:12px;margin:12px 0}
+.task-name{font-size:18px;font-weight:900}.task-desc{font-size:14px;color:#ddd;margin-top:6px;line-height:1.6}
+.task-list{max-height:360px;overflow:auto;margin-top:10px}
+.task-item{background:#17161c;border:1px solid #ffffff12;border-radius:11px;padding:10px;margin:7px 0}
+.task-item b{display:block}.task-item span{font-size:12px;color:#aaa}
+.teambox{background:#18171e;border-radius:13px;padding:12px;margin-top:10px}
+.vote{display:flex;justify-content:space-between;align-items:center;background:#292832;color:#fff;text-align:left;margin:8px 0;border:1px solid #ffffff12;box-shadow:none}
+.result{padding:22px;border-radius:18px;background:#292832;text-align:center}
+.win{color:#29e4da}.lose{color:#ff4fa3}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+td,th{padding:9px 5px;border-bottom:1px solid #ffffff12;text-align:left}th{color:#aaa;font-size:12px}
+.modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modalbox{width:min(430px,100%);background:#25242d;border-radius:22px;padding:24px;text-align:center;border:1px solid #ffffff22}
+@media(max-width:500px){.grid{grid-template-columns:1fr 1fr}.rolegrid{grid-template-columns:1fr}.actions{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="logo">🦑 <b>Splatoon 3</b> 壞魷遊戲</div>
+    <div style="display:flex;gap:7px;align-items:center">
+      <select id="language" class="lang" aria-label="語言">
+        <option value="繁體中文">繁體中文</option>
+        <option value="简体中文">简体中文</option>
+      </select>
+      <div class="phase" id="phase">主持人</div>
+    </div>
+  </div>
+
+  <section id="home" class="page on">
+    <div class="card hero">
+      <div class="squid">🦑</div>
+      <div class="tag">主持人專用</div>
+      <h1 id="homeTitle">壞魷遊戲</h1>
+      <p id="homeDesc">本網站只供主持人使用。抽選結果、任務、投票及最終判定都在主持人畫面完成。</p>
+      <button id="newGame">建立新遊戲</button>
+    </div>
+  </section>
+
+  <section id="setup" class="page">
+    <div class="card">
+      <div class="tag">第一步</div>
+      <h2>建立本局</h2>
+      <div class="notice">玩家直接使用 <strong>1～8 號</strong>代表玩家，不需要輸入名字。</div>
+
+      <label>遊戲人數</label>
+      <div class="grid" id="countChoices">
+        <button class="choice" data-count="4">4 人<br><span class="small">2 對 2</span></button>
+        <button class="choice" data-count="6">6 人<br><span class="small">3 對 3</span></button>
+        <button class="choice" data-count="8">8 人<br><span class="small">4 對 4</span></button>
+      </div>
+
+      <label>遊戲模式</label>
+      <div class="grid" id="modeChoices">
+        <button class="choice" data-mode="涂地">涂地</button>
+        <button class="choice" data-mode="區域">區域</button>
+        <button class="choice" data-mode="塔楼">塔楼</button>
+        <button class="choice" data-mode="魚虎">魚虎</button>
+        <button class="choice" data-mode="蛤蜊">蛤蜊</button>
+      </div>
+      <div class="notice mode-note" id="modeNote"></div>
+
+      <div id="dullSetting"></div>
+
+      <label>本局玩家</label>
+      <div id="playerNumbers"></div>
+
+      <div class="actions">
+        <button class="alt" id="setupBack">返回</button>
+        <button id="drawRoles">開始抽選身份</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="draw" class="page">
+    <div class="card">
+      <div class="tag">第二步</div>
+      <h2>身份抽選結果</h2>
+      <div class="notice">以下內容只給主持人查看。玩家不需要操作網站。</div>
+      <div id="drawSummary"></div>
+      <div id="roles"></div>
+
+      <div class="taskbox">
+        <div><strong>🎯 本局壞魷任務</strong></div>
+        <div class="task-name" id="taskName"></div>
+        <div class="task-desc" id="taskDesc"></div>
+        <div class="actions">
+          <button class="yellow" id="rerollTask">🎲 重新抽取任務</button>
+          <button class="alt" id="showTaskPool">查看本模式任務</button>
+        </div>
+        <div id="taskPool" class="task-list" style="display:none"></div>
+      </div>
+
+      <div class="actions">
+        <button class="alt" id="resetGame1">重新建立</button>
+        <button id="battleStart">開始對戰</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="battle" class="page">
+    <div class="card">
+      <div class="tag">第三步</div>
+      <h2>對戰結果</h2>
+      <div id="battleInfo"></div>
+
+      <label>哪一隊獲勝？</label>
+      <div class="grid two">
+        <button class="choice" id="teamAWin">甲隊獲勝</button>
+        <button class="choice" id="teamBWin">乙隊獲勝</button>
+      </div>
+
+      <div id="sheriffArea"></div>
+
+      <div class="actions">
+        <button class="alt" id="battleBack">返回</button>
+        <button id="startVote" disabled>進入最後投票</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="vote" class="page">
+    <div class="card">
+      <div class="tag">第四步</div>
+      <h2 id="voteHeading">最後投票</h2>
+      <div id="voteInfo"></div>
+      <div id="voteButtons"></div>
+    </div>
+  </section>
+
+  <section id="result" class="page">
+    <div class="card">
+      <div class="tag">第五步</div>
+      <h2>投票結果</h2>
+      <div id="voteResult"></div>
+    </div>
+  </section>
+
+  <section id="final" class="page">
+    <div class="card">
+      <div class="tag">遊戲結束</div>
+      <h2>最終結果</h2>
+      <div id="finalResult"></div>
+      <div class="actions"><button id="newRound">再玩一局</button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+const LANG={
+  "繁體中文":{
+    game:"壞魷遊戲",host:"主持人",setup:"建立本局",draw:"身份抽選結果",battle:"對戰結果",vote:"最後投票",result:"投票結果",final:"最終結果",
+    hostOnly:"以下內容只給主持人查看。玩家不需要操作網站。",
+    modeNames:{涂地:"涂地",區域:"區域",塔楼:"塔樓",魚虎:"魚虎",蛤蜊:"蛤蜊"},
+    role:{good:"好魷",bad:"壞魷",dull:"呆呆魷"},
+    teamA:"甲隊",teamB:"乙隊",team:"隊",
+    noDull:"本模式沒有呆呆魷。",fixedDull:"8 人模式固定有呆呆魷。壞魷與呆呆魷一定在不同隊。",
+    chooseDull:"請選擇本局是否有呆呆魷。",yesDull:"有呆呆魷",noDull:"沒有呆呆魷",
+    selectedYes:"你選擇了「有呆呆魷」",selectedNo:"你選擇了「沒有呆呆魷」",
+    start:"開始抽選身份",reroll:"🎲 重新抽取任務",pool:"查看本模式任務",reset:"重新建立",
+    battleStart:"開始對戰",back:"返回",voteStart:"進入最後投票",
+    task:"本局壞魷任務",taskHint:"任務只從「全模式任務＋目前模式專屬任務」中隨機抽取。",
+    winner:"哪一隊獲勝？",sheriff:"勝利方排行第一＝警長",sheriffPick:"請選擇警長",
+    sheriffRule:"警長的票數效果為 1.5 倍。",badCannotVote:"壞魷不能投票。",
+    taskDone:"任務完成",taskNotDone:"任務未完成",caught:"壞魷被投出",safe:"壞魷沒有被投出",
+    badWin:"壞魷勝利！",badLose:"壞魷失敗！",winReason:"任務完成，而且最後投票沒有被投出。",
+    loseReason:"只要任務未完成，或壞魷在最後投票被投出，壞魷就輸。",
+    tie:"最高票平手，沒有人被投出。",eliminated:"被投出：",sheriffLabel:"警長",
+    confirmTask:"主持人確認壞魷任務",yes:"完成",no:"未完成",new:"建立新遊戲",
+    modePool:"任務池",allMode:"全模式"
+  },
+  "简体中文":{
+    game:"坏鱿游戏",host:"主持人",setup:"建立本局",draw:"身份抽选结果",battle:"对战结果",vote:"最后投票",result:"投票结果",final:"最终结果",
+    hostOnly:"以下内容只给主持人查看。玩家不需要操作网站。",
+    modeNames:{涂地:"涂地",區域:"区域",塔楼:"塔楼",魚虎:"鱼虎",蛤蜊:"蛤蜊"},
+    role:{good:"好鱿",bad:"坏鱿",dull:"呆呆鱿"},
+    teamA:"甲队",teamB:"乙队",team:"队",
+    noDull:"本模式没有呆呆鱿。",fixedDull:"8 人模式固定有呆呆鱿。坏鱿与呆呆鱿一定在不同队。",
+    chooseDull:"请选择本局是否有呆呆鱿。",yesDull:"有呆呆鱿",noDull:"没有呆呆鱿",
+    selectedYes:"你选择了「有呆呆鱿」",selectedNo:"你选择了「没有呆呆鱿」",
+    start:"开始抽选身份",reroll:"🎲 重新抽取任务",pool:"查看本模式任务",reset:"重新建立",
+    battleStart:"开始对战",back:"返回",voteStart:"进入最后投票",
+    task:"本局坏鱿任务",taskHint:"任务只从「全模式任务＋当前模式专属任务」中随机抽取。",
+    winner:"哪一队获胜？",sheriff:"胜利方排行第一＝警长",sheriffPick:"请选择警长",
+    sheriffRule:"警长的票数效果为 1.5 倍。",badCannotVote:"坏鱿不能投票。",
+    taskDone:"任务完成",taskNotDone:"任务未完成",caught:"坏鱿被投出",safe:"坏鱿没有被投出",
+    badWin:"坏鱿胜利！",badLose:"坏鱿失败！",winReason:"任务完成，而且最后投票没有被投出。",
+    loseReason:"只要任务未完成，或坏鱿在最后投票被投出，坏鱿就输。",
+    tie:"最高票平手，没有人被投出。",eliminated:"被投出：",sheriffLabel:"警长",
+    confirmTask:"主持人确认坏鱿任务",yes:"完成",no:"未完成",new:"建立新游戏",
+    modePool:"任务池",allMode:"全模式"
+  }
+};
+
+const TASKS={
+  all:[
+    ["殺魷償命","全模式任務","全模式"],
+    ["蓄勢不發 一星","每條命擊殺不能超過 1 人；助攻不算","全模式"],
+    ["蓄勢不發 一星","滿槽維持 60 秒不使用大招","全模式"],
+    ["我來支援 二星","復活跳隊友並且死於敵方蹲跳點擊殺 5 次","全模式"],
+    ["按兵不動 二星","潛伏達 25 秒期間不可移動","全模式"],
+    ["兼愛非攻 ★★★","開局 1 分鐘不可擊殺、助攻以及死亡","全模式"],
+    ["終場衝刺 ★★★","剩餘 1 分鐘累計死亡 6 次（若加時算在 1 分鐘內）","全模式"],
+    ["認準你了 ★★★","本局只可以擊殺同一個敵人；其他助攻不算","全模式"],
+    ["副武器大師 ★★★","僅使用副武器擊殺 5 人以上；主武器和大招不可殺敵","全模式"]
+  ],
+  "涂地":[
+    ["殺魷償命","全模式任務","全模式"]
+  ],
+  "區域":[
+    ["養精蓄銳 1星","開局 30 秒內不可以塗上區域","區域"],
+    ["中立單位 1星","區域僵持時不可對區域內進行塗地","區域"],
+    ["堅守陣地？ 1星","死在區域內 4 次","區域"],
+    ["點到為止 1星","我方區域佔領時不可擊殺敵人","區域"],
+    ["副武器？主武器！ 2星","副武器擊殺區域內敵人 3 次","區域"],
+    ["區域絞肉機 3星","區域內累積魷魚滾行 5 次","區域"]
+  ],
+  "塔楼":[
+    ["害怕孤單 1星","和隊友 2 人一起站塔持續 10 秒","塔樓"],
+    ["仰臥起坐 2星","站塔後 1 秒內下塔；累積完成 4 次","塔樓"],
+    ["★★人在塔在","在塔上死亡 5 次","塔樓"],
+    ["自己人別開槍 1星","自己不在塔上的情況下被塔樓上的敵人累積擊殺 5 次","塔樓"],
+    ["★★★懼高症","站塔次數最多 2 次","塔樓"],
+    ["★★★臨陣脫逃","剛到達敵方任意檢查點時下塔；累積完成 3 次","塔樓"]
+  ],
+  "魚虎":[
+    ["藝術就是爆炸 1星","死於魚虎防護罩 2 次","魚虎"],
+    ["一個頂兩個 1星","隊友拿魚虎時不可攻擊敵方，直到魚虎死亡或放置檢查點","魚虎"],
+    ["在劫難逃 2星","魚虎連續魷魚滾行 2 次","魚虎"],
+    ["在劫難逃 2星","死於敵方魚砲擊殺 4 次","魚虎"],
+    ["極度專一 3星","只使用魚虎殺敵；其他武器僅用於塗地","魚虎"],
+    ["★★★頂天立地","拿魚不潛墨 20 秒","魚虎"]
+  ],
+  "蛤蜊":[
+    ["害怕關注 1星","保存 7 顆蛤蜊不合成，持續 30 秒","蛤蜊"],
+    ["頂級失誤 1星","籃框下大蛤蜊投擲失誤 1 次","蛤蜊"],
+    ["還你自由 2星","連續丟出場外 3 小蛤蜊","蛤蜊"],
+    ["★★魷點礙事","合成大蛤蜊後丟掉，讓大蛤蜊自己消失；完成 3 次","蛤蜊"],
+    ["★★★吝嗇鬼","整局不可以丟小蛤蜊","蛤蜊"],
+    ["★★★你行你上","將大蛤蜊投給隊友；隊友成功撿起 3 次","蛤蜊"]
+  ]
+};
+
+const S={
+  count:8,mode:"涂地",hasDull:true,players:[],bad:null,dull:null,
+  task:null,winnerTeam:null,sheriff:null,voterIndex:0,votes:{},
+  totals:{},eliminated:null,taskDone:false
+};
+let lang=localStorage.getItem("badSquidLanguage")||"繁體中文";
+
+function T(k){return LANG[lang][k]||k}
+function modeLabel(m){return LANG[lang].modeNames[m]||m}
+function esc(x){return String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function E(id){return document.getElementById(id)}
+function show(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));E(id).classList.add("on")}
+function setPhase(x){E("phase").textContent=x}
+function modal(title,text,icon="🦑"){
+  const m=document.createElement("div");m.className="modal";
+  m.innerHTML='<div class="modalbox"><div style="font-size:56px">'+icon+'</div><h2>'+esc(title)+'</h2><p>'+esc(text)+'</p><button id="modalOK">確認</button></div>';
+  document.body.appendChild(m);E("modalOK").onclick=()=>m.remove();
+}
+function applyLanguage(){
+  localStorage.setItem("badSquidLanguage",lang);
+  E("language").value=lang;
+  document.title="Splatoon 3 "+T("game");
+  E("homeTitle").textContent=T("game");
+  E("homeDesc").textContent=lang==="繁體中文"?"本網站只供主持人使用。抽選結果、任務、投票及最終判定都在主持人畫面完成。":"本网站只供主持人使用。抽选结果、任务、投票及最终判定都在主持人画面完成。";
+  E("newGame").textContent=T("new");
+  renderDull();renderModeNote();
+}
+function setCount(n){
+  S.count=n;
+  if(n===4)S.hasDull=false;
+  if(n===8)S.hasDull=true;
+  document.querySelectorAll("#countChoices .choice").forEach(b=>b.classList.toggle("sel",+b.dataset.count===n));
+  renderDull();renderPlayers();
+}
+function setMode(m){
+  S.mode=m;
+  document.querySelectorAll("#modeChoices .choice").forEach(b=>b.classList.toggle("sel",b.dataset.mode===m));
+  renderModeNote();
+}
+function renderModeNote(){
+  E("modeNote").innerHTML="<strong>"+esc(modeLabel(S.mode))+"</strong>："+T("taskHint");
+}
+function renderDull(){
+  const d=E("dullSetting");
+  if(S.count===6){
+    d.innerHTML='<label>'+T("chooseDull")+'</label><div class="grid two"><button class="choice '+(S.hasDull?"sel":"")+'" id="dullYes">👻 '+T("yesDull")+'</button><button class="choice '+(!S.hasDull?"sel":"")+'" id="dullNo">🦑 '+T("noDull")+'</button></div>';
+    E("dullYes").onclick=()=>{S.hasDull=true;renderDull();modal(T("selectedYes"),"6 人模式會抽出 1 名壞魷及 1 名呆呆魷，而且兩人一定不同隊。","👻")};
+    E("dullNo").onclick=()=>{S.hasDull=false;renderDull();modal(T("selectedNo"),"6 人模式只抽出 1 名壞魷。","🦑")};
+  }else if(S.count===8){
+    d.innerHTML='<div class="notice"><strong>8 人模式：固定有呆呆魷 👻</strong><br>'+T("fixedDull")+'</div>';
+  }else{
+    d.innerHTML='<div class="notice"><strong>4 人模式：沒有呆呆魷。</strong><br>'+T("noDull")+'</div>';
+  }
+}
+function renderPlayers(){
+  let s="";
+  for(let i=1;i<=S.count;i++){
+    const team=i<=S.count/2?T("teamA"):T("teamB");
+    s+='<div class="playerrow" style="display:flex;align-items:center;gap:10px;background:#18171e;border-radius:12px;padding:11px;margin:7px 0"><div class="num" style="width:34px;height:34px;border-radius:9px;background:#302f38;display:grid;place-items:center;font-weight:900">'+i+'</div><div><strong>玩家 '+i+'</strong><div class="small">'+team+'</div></div></div>';
+  }
+  E("playerNumbers").innerHTML=s;
+}
+function combinedTasks(){
+  const list=[...TASKS.all,...(TASKS[S.mode]||[])];
+  return list;
+}
+function randomTask(){
+  const list=combinedTasks();
+  S.task=list[Math.floor(Math.random()*list.length)];
+  E("taskName").textContent=S.task[0];
+  E("taskDesc").textContent=S.task[1];
+}
+function startDraw(){
+  S.players=[];
+  for(let i=1;i<=S.count;i++)S.players.push({id:i,team:i<=S.count/2?"A":"B",role:"good",vote:null});
+  S.bad=S.players[Math.floor(Math.random()*S.players.length)];
+  S.bad.role="bad";
+  S.dull=null;
+  if(S.hasDull){
+    const opp=S.players.filter(p=>p.team!==S.bad.team);
+    S.dull=opp[Math.floor(Math.random()*opp.length)];
+    S.dull.role="dull";
+  }
+  randomTask();renderDraw();
+}
+function roleText(p){
+  if(p.role==="bad")return {icon:"🐙",name:T("role").bad,cls:"bad"};
+  if(p.role==="dull")return {icon:"👻",name:T("role").dull,cls:"dull"};
+  return {icon:"🦑",name:T("role").good,cls:"good"};
+}
+function renderDraw(){
+  show("draw");setPhase(T("draw"));
+  E("drawSummary").innerHTML='<div class="notice"><strong>遊戲模式：</strong>'+esc(modeLabel(S.mode))+'<br><strong>人數：</strong>'+S.count+' 人<br><strong>隊伍：</strong>'+T("teamA")+' '+S.count/2+' 人｜'+T("teamB")+' '+S.count/2+' 人</div>';
+  let cards='<div class="rolegrid">';
+  S.players.forEach(p=>{const r=roleText(p);cards+='<div class="rolecard '+r.cls+'"><div class="roleicon">'+r.icon+'</div><h3>玩家 '+p.id+'</h3><p>'+r.name+'｜'+(p.team==="A"?T("teamA"):T("teamB"))+'</p></div>'});
+  cards+="</div>";
+  E("roles").innerHTML=cards;
+  E("taskName").textContent=S.task[0];E("taskDesc").textContent=S.task[1];
+  E("taskPool").style.display="none";
+  E("taskPool").innerHTML=combinedTasks().map(t=>'<div class="task-item"><b>'+esc(t[0])+'</b><span>'+esc(t[1])+'｜'+esc(t[2])+'</span></div>').join("");
+}
+function startBattle(){
+  show("battle");setPhase(T("battle"));
+  const A=S.players.filter(p=>p.team==="A").map(p=>"玩家 "+p.id).join("、");
+  const B=S.players.filter(p=>p.team==="B").map(p=>"玩家 "+p.id).join("、");
+  E("battleInfo").innerHTML='<div class="notice"><strong>🐙 '+T("role").bad+'：</strong>玩家 '+S.bad.id+'<br>'+(S.dull?'<strong>👻 '+T("role").dull+'：</strong>玩家 '+S.dull.id+'<br>':"")+'<strong>🎯 '+T("task")+'：</strong>'+esc(S.task[0])+'｜'+esc(S.task[1])+'</div><div class="teambox"><strong>'+T("teamA")+'：</strong>'+A+'<br><br><strong>'+T("teamB")+'：</strong>'+B+'</div>';
+  E("sheriffArea").innerHTML="";S.winnerTeam=null;S.sheriff=null;E("startVote").disabled=true;
+  E("teamAWin").classList.remove("sel");E("teamBWin").classList.remove("sel");
+}
+function chooseWinner(team){
+  S.winnerTeam=team;
+  E("teamAWin").classList.toggle("sel",team==="A");E("teamBWin").classList.toggle("sel",team==="B");
+  const winners=S.players.filter(p=>p.team===team);
+  E("sheriffArea").innerHTML='<label>'+T("sheriff")+'</label><div class="notice">'+T("sheriffRule")+'</div><select id="sheriffSelect"><option value="">'+T("sheriffPick")+'</option>'+winners.map(p=>'<option value="'+p.id+'">玩家 '+p.id+'</option>').join("")+'</select>';
+  E("sheriffSelect").onchange=()=>{
+    S.sheriff=S.players.find(p=>p.id===+E("sheriffSelect").value)||null;
+    E("startVote").disabled=!S.sheriff;
+  };
+}
+function startVote(){
+  if(!S.sheriff)return;
+  S.voterIndex=0;S.votes={};S.players.forEach(p=>p.vote=null);
+  show("vote");setPhase(T("vote"));renderVoter();
+}
+function renderVoter(){
+  const voters=S.players.filter(p=>p.role!=="bad");
+  if(S.voterIndex>=voters.length){finishVoting();return}
+  const voter=voters[S.voterIndex];
+  E("voteHeading").textContent="玩家 "+voter.id+" 的投票";
+  E("voteInfo").innerHTML='<div class="notice"><strong>目前投票：</strong>玩家 '+voter.id+'<br>'+(voter.id===S.sheriff.id?T("sheriffRule")+"<br>":"")+T("badCannotVote")+'</div>';
+  E("voteButtons").innerHTML="";
+  S.players.filter(p=>p.id!==voter.id).forEach(target=>{
+    const b=document.createElement("button");b.className="vote";
+    b.innerHTML="玩家 "+target.id+'<span class="small">'+(target.team==="A"?T("teamA"):T("teamB"))+'</span>';
+    b.onclick=()=>{voter.vote=target.id;S.votes[voter.id]=target.id;S.voterIndex++;renderVoter()};
+    E("voteButtons").appendChild(b);
+  });
+}
+function finishVoting(){
+  S.totals={};S.players.forEach(p=>S.totals[p.id]=0);
+  S.players.filter(p=>p.role!=="bad").forEach(v=>{
+    if(v.vote)S.totals[v.vote]+=v.id===S.sheriff.id?1.5:1;
+  });
+  const max=Math.max(...S.players.map(p=>S.totals[p.id]));
+  const tops=S.players.filter(p=>S.totals[p.id]===max);
+  S.eliminated=tops.length===1?tops[0]:null;
+  renderVoteResult();
+}
+function voteTable(){
+  return '<table><tr><th>玩家</th><th>身份</th><th>票數</th></tr>'+S.players.map(p=>{
+    const r=roleText(p);
+    return '<tr><td>玩家 '+p.id+'</td><td>'+r.icon+' '+r.name+'</td><td><b>'+S.totals[p.id].toFixed(S.totals[p.id]%1?1:0)+'</b></td></tr>';
+  }).join("")+'</table>';
+}
+function renderVoteResult(){
+  show("result");setPhase(T("result"));
+  const caught=S.eliminated&&S.eliminated.id===S.bad.id;
+  E("voteResult").innerHTML='<div class="result"><div style="font-size:56px">'+(caught?"🔴":"🏆")+'</div><h2 class="'+(caught?"lose":"win")+'">'+(caught?T("caught"):T("safe"))+'</h2><p>'+(S.eliminated?T("eliminated")+"玩家 "+S.eliminated.id:T("tie"))+'</p></div>'+voteTable()+
+  '<h2 style="margin-top:20px">'+T("confirmTask")+'</h2><div class="actions"><button class="pink" id="taskFail">'+T("taskNotDone")+'</button><button id="taskPass">'+T("taskDone")+'</button></div>';
+  E("taskFail").onclick=()=>finalize(false);E("taskPass").onclick=()=>finalize(true);
+}
+function finalize(done){
+  S.taskDone=done;
+  const caught=S.eliminated&&S.eliminated.id===S.bad.id;
+  const badWin=done&&!caught;
+  show("final");setPhase(T("final"));
+  E("finalResult").innerHTML='<div class="result"><div style="font-size:62px">'+(badWin?"🐙🏆":"🦑🏆")+'</div><h2 class="'+(badWin?"win":"lose")+'">'+(badWin?T("badWin"):T("badLose"))+'</h2><p>'+(badWin?T("winReason"):T("loseReason"))+'</p></div><div class="notice"><strong>🐙 '+T("role").bad+'：</strong>玩家 '+S.bad.id+'<br>'+(S.dull?'<strong>👻 '+T("role").dull+'：</strong>玩家 '+S.dull.id+'<br>':"")+'<strong>🎯 '+T("task")+'：</strong>'+esc(S.task[0])+'｜'+esc(S.task[1])+'<br><strong>'+T("task")+'：</strong>'+(done?"✅ "+T("yes"):"❌ "+T("no"))+'<br><strong>最後投票：</strong>'+(caught?"❌ "+T("caught"):"✅ "+T("safe"))+'<br><strong>'+T("sheriffLabel")+'：</strong>玩家 '+S.sheriff.id+'（1.5 票）</div>'+voteTable();
+}
+function reset(){location.reload()}
+
+E("language").onchange=e=>{lang=e.target.value;applyLanguage()};
+E("newGame").onclick=()=>{show("setup");setPhase(T("setup"));setCount(8);setMode("涂地")};
+E("setupBack").onclick=()=>{show("home");setPhase(T("host"))};
+document.querySelectorAll("#countChoices .choice").forEach(b=>b.onclick=()=>setCount(+b.dataset.count));
+document.querySelectorAll("#modeChoices .choice").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+E("drawRoles").onclick=startDraw;
+E("rerollTask").onclick=()=>{randomTask();modal("任務已重新抽取","已按照目前模式重新隨機抽取任務。","🎲")};
+E("showTaskPool").onclick=()=>{const x=E("taskPool");x.style.display=x.style.display==="none"?"block":"none"};
+E("resetGame1").onclick=reset;
+E("battleStart").onclick=startBattle;
+E("teamAWin").onclick=()=>chooseWinner("A");
+E("teamBWin").onclick=()=>chooseWinner("B");
+E("battleBack").onclick=renderDraw;
+E("startVote").onclick=startVote;
+E("newRound").onclick=reset;
+
+applyLanguage();setCount(8);setMode("涂地");
+})();
+</script>
+</body>
+</html>
